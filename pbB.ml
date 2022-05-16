@@ -1,4 +1,3 @@
-type lerarvore = int Array
 module type Ordenado = sig (*Modulo necessário para fazer comparação *)
 type a
 val comparar: a -> a -> int
@@ -45,12 +44,12 @@ let rec add valor a =
       if c = 0 then a else if c < 0 then balance (add valor e) x d else balance e x (add valor d)
 
       
-(* Procurar valores em comum -> Falta fazer as listas para serem comparadas e pegar nos valores iguais e juntar ás listas*)
+(* Procurar valores em comum -> Falta fazer as listas para serem comparadas e pegar nos valores iguais e juntar ás listas
 let procurar valor =
 | Empty -> false
 | Node  (e,x,d) when x = valor -> true
 | Node  (e,_,d) -> procurar x e || procurar x d
-
+*)
 
 
 
@@ -61,15 +60,30 @@ let procurar valor =
 
 end
 
+(* --------------------------------------------------------- Input ---------------------------------------------------------*)
 
+(* Ler quantas arvores vai ter + Pedir o número de elementos que a arvores vai ter + Pedir valor dos nodos
+   Exemplo: nrArvores = 3
+            -Array de 3 posições
+            qtdElementos = 5
+            -Arvore 1 de 5 elementos
+            valorNodos = 2,3,4,5,6
+*)
 
-(* Ler quantos nodos a arvore vai ter e pedir o valor dos nodos (???) *)
-let a = Array.make 
-let n = read_int () (* Le nr de nodos que a arvore vai ter *)
-let ler_arvore a =
-
-for i = 0 to n - 1 do
-    let valores = Scanf.scanf "%d" (fun n -> n) in
-    a.(i) <- valores
-done;; (* Pede o valor de n mas não pede os valores para o array*)
-
+let introducaovalores =
+  let nrArvores = read_int () in (* Pede nr de arvores *)
+  if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido"
+  else
+  let a = Array.make nrArvores 0 in
+  for i = 0 to nrArvores-1 do 
+      let qtdElementos = read_int () in
+      if qtdElementos <= 0 || qtdElementos > 5000 then failwith "Valores inválidos"
+      else
+      for j = 0 to qtdElementos - 1 do
+          let valorNodos = read_int () in 
+          if valorNodos < 0 then failwith "Valor Negativo"
+          else
+          a.(i) <- valorNodos
+      done
+  done
+  let (a, b) = Scanf.scanf "%d %d" (fun a b -> (a,b)) 
