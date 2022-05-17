@@ -1,11 +1,4 @@
-module type Ordenado = sig (*Modulo necessário para fazer comparação *)
-type a
-val comparar: a -> a -> int
-end
-module Make (Ord: Ordenado) = struct 
- 
-
-type a  = Empty | Node of a  * Ord.a * a  * int 
+type a  = Empty | Node of 'a  * 'a * 'a  * int 
 
 
 
@@ -40,8 +33,7 @@ else node e x d
 let rec add valor a =
   match a with
   | Empty -> Node (Empty, valor, Empty, 1)
-  | Node (e,x,d,_) as a -> let c = Ord.comparar valor x in
-      if c = 0 then a else if c < 0 then balance (add valor e) x d else balance e x (add valor d)
+  | Node (e,x,d,_) as a -> let c = if valor = x then c = 0 else  if c < 0 then balance (add valor e) x d else balance e x (add valor d);
 
       
 (* Procurar valores em comum -> Falta fazer as listas para serem comparadas e pegar nos valores iguais e juntar ás listas
@@ -52,13 +44,25 @@ let procurar valor =
 *)
 
 
+let introducaovalores () =
+  let nrArvores = read_int () in (* Pede nr de arvores *)
+  if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido"
+  else
+  let c = Array.make nrArvores Empty in
+  for i = 0 to nrArvores-1 do 
+    let qtdElementos = read_int () in
+      if qtdElementos <= 0 || qtdElementos > 5000 then failwith "Valores inválidos"
+      else 
+      for j = 0 to qtdElementos - 1 do
+          let valorNodos = read_int () in 
+          if valorNodos < 0 then failwith "Valor Negativo"
+          else
+             add valorNodos a
+      done
+      c.(i) <- arvore
+      
+  done
 
-
-
-
-
-
-end
 
 (* --------------------------------------------------------- Input ---------------------------------------------------------*)
 
@@ -69,21 +73,3 @@ end
             -Arvore 1 de 5 elementos
             valorNodos = 2,3,4,5,6
 *)
-
-let introducaovalores =
-  let nrArvores = read_int () in (* Pede nr de arvores *)
-  if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido"
-  else
-  let a = Array.make nrArvores 0 in
-  for i = 0 to nrArvores-1 do 
-      let qtdElementos = read_int () in
-      if qtdElementos <= 0 || qtdElementos > 5000 then failwith "Valores inválidos"
-      else
-      for j = 0 to qtdElementos - 1 do
-          let valorNodos = read_int () in 
-          if valorNodos < 0 then failwith "Valor Negativo"
-          else
-          a.(i) <- valorNodos
-      done
-  done
-  let (a, b) = Scanf.scanf "%d %d" (fun a b -> (a,b)) 
