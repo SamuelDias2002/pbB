@@ -1,4 +1,4 @@
-type a  = Empty | Node of 'a  * 'a * 'a  * int 
+type 'a avl  =  Empty | Node of 'a avl  * 'a * 'a avl  * int 
 
 
 
@@ -14,7 +14,7 @@ let balance e x d = (* Equilibrar a avl *)
   let ad = altura d in
   if ae > ad + 1 then begin
     match e with
-    | Node (ee, ex, ed, _) when altura ee >= altura ed -> node ee ex (node ed x e)
+    | Node (ee, ex, ed, _) when altura ee >= altura ed -> node ee ex (node ed x d)
     | Node (ee, ex, Node (ede, edx , edd,_),_) -> node (node ee ex ede) edx (node edd x d)
     | _ -> assert false 
 end 
@@ -29,47 +29,60 @@ assert false
 end 
 else node e x d
 
-(*Adicionar valor *)
-let rec add valor a =
-  match a with
+
+let rec add valor = function
   | Empty -> Node (Empty, valor, Empty, 1)
-  | Node (e,x,d,_) as a -> let c = if valor = x then c = 0 else  if c < 0 then balance (add valor e) x d else balance e x (add valor d);
-
-      
-(* Procurar valores em comum -> Falta fazer as listas para serem comparadas e pegar nos valores iguais e juntar ás listas
-let procurar valor =
-| Empty -> false
-| Node  (e,x,d) when x = valor -> true
-| Node  (e,_,d) -> procurar x e || procurar x d
-*)
+  | Node (e,x,d,_) as a -> let c = compare  valor x in
+  if c = 0 then a
+  else if c < 0 then balance (add valor e) x d 
+  else balance e x (add valor d);;
 
 
-let introducaovalores () =
-  let nrArvores = read_int () in (* Pede nr de arvores *)
-  if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido"
-  else
-  let c = Array.make nrArvores Empty in
-  for i = 0 to nrArvores-1 do 
-    let qtdElementos = read_int () in
-      if qtdElementos <= 0 || qtdElementos > 5000 then failwith "Valores inválidos"
-      else 
-      for j = 0 to qtdElementos - 1 do
-          let valorNodos = read_int () in 
-          if valorNodos < 0 then failwith "Valor Negativo"
-          else
-             add valorNodos a
-      done
-      c.(i) <- arvore
-      
-  done
+let rec procurar valor arvore =
+    match arvore with
+    | Empty -> false
+    | Node (e, x, d, _) when x = valor -> true
+    | Node (e, _, d, _) -> procurar(valor)(e) || procurar(valor)(d);;
+
+let rec armazenacaminho arvore valor =
+let rec accArmazenar arvore =
+  match arvore with
+  | Empty -> []
+  | Node (e, x, d, _) ->
+    if procurar(valor)(e) then x::accArmazenar (e) else x::accArmazenar (d) in ();
+
+let caminho = accArmazenar arvore in caminho
+
+let procuraMutacao arvore a b =
+    let caminhoA = armazenacaminho arvore a in
+    let caminhoB = armazenacaminho arvore b in
+    let ultimoComum = ref 0 in  
+    let (w,z) = (ref 0, ref 0) in
+    let  () =
+      while !w < List.length(caminhoA) && !z < List.length(caminhoB) do
+        if List.nth(caminhoA)(!w) == List.nth(caminhoB)(!z) then
+          ultimoComum := List.nth(caminhoA)(!w); incr w; incr z;
+      done;
+    in !ultimoComum 
 
 
-(* --------------------------------------------------------- Input ---------------------------------------------------------*)
 
-(* Ler quantas arvores vai ter + Pedir o número de elementos que a arvores vai ter + Pedir valor dos nodos
-   Exemplo: nrArvores = 3
-            -Array de 3 posições
-            qtdElementos = 5
-            -Arvore 1 de 5 elementos
-            valorNodos = 2,3,4,5,6
-*)
+  let leitura ()=
+  let nrArvores = read_int () in
+  let listaArvores = ref [] in (* Pede nr de arvores *)
+  if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido" else
+   (*Mutavel pq pode armazenar valores*) 
+  for i = 0 to nrArvores-1 do                   
+    let nodos = ref [] in (*Nodos da arvores*)
+    let qtdNodos = read_int () in (*Quantidade de elementos que a arvore tem*)
+    let valorNodos = read_int () in (*Valor dos Nodos*)
+    if valorNodos <= 0 || valorNodos > 10000 then failwith "Valores inválidos"
+    else 
+    for j = 0 to qtdNodos - 1 do 
+      nodos := !nodos@[valorNodos]
+    done;
+     listaArvores := !listaArvores@[!nodos]
+  done;;
+
+  let (a, b) = Scanf.scanf "%d %d" (fun a b -> (a, b))
+

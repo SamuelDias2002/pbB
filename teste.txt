@@ -1,0 +1,124 @@
+open Printf
+
+type 'a tree = Empty | Node of ('a tree * 'a * 'a tree * int)
+
+let height node =
+  match node with
+  | Empty -> 0
+  | Node (_,_,_,height) -> height
+
+let create_node l v r = Node(l,v,r, 1+max(height l)(height r))
+
+let balance e x d =
+  let ae = height e in
+  let ad = height d in
+  if ae > ad + 1 then begin
+    match e with
+    | Node (ee, ex, ed, _) when height ee >= height ed -> create_node ee ex (create_node ed x e)
+    | Node (ee, ex, Node (ede, edx , edd,_),_) -> create_node (create_node ee ex ede) edx (create_node edd x d)
+    | _ -> assert false 
+  end 
+  else if ad > ae + 1 then begin
+    match d with
+    | Node (de, dx, dd, _) when height dd >= height de ->
+      create_node (create_node e x de) dx dd
+    | Node (Node(dee, dex, ded, _), dx, dd, _) ->
+      create_node (create_node d x dee) dex (create_node ded dx dd)
+    | _ ->
+      assert false
+  end 
+  else create_node e x d
+
+(* let rec in_order = function
+   | Empty -> []
+   | Node (left,value,right,_) -> in_order(left)@(value::in_order(right))
+
+   let print_list list new_line =
+   List.iter(printf "%d ") list;
+   if new_line then print_newline() else ();; *)
+
+let rec add value = function
+  | Empty ->
+    Node (Empty, value, Empty, 1)
+  | Node (left, x, right, _) as t ->
+    let c = compare value x in
+    if c = 0 then t
+    else if c < 0 then balance (add value left) x right
+    else balance left x (add value right);;
+
+let rec find value tree =
+  match tree with
+  | Empty -> false
+  | Node (left, x, right, _) when x = value -> true
+  | Node (left, _, right, _) -> find(value)(left) || find(value)(right);;
+
+let rec get_path_from_root tree value =
+  let rec dfs tree =
+    match tree with
+    | Empty -> []
+    | Node (left, x, right, _) ->
+      if find(value)(left) then x::dfs(left) else x::dfs(right) in ();
+
+  let path = dfs(tree) in path
+
+
+let search_closest_node tree (a:int) (b:int) =
+  let path_a = get_path_from_root(tree)(a) in
+  let path_b = get_path_from_root(tree)(b) in
+  let last_common = ref 0 in
+  let (i, j) = (ref 0, ref 0) in
+  let () = while !i < List.length(path_a) && !j < List.length(path_b) do
+      if List.nth(path_a)(!i) == List.nth(path_b)(!j) then
+        last_common := List.nth(path_a)(!i); incr i; incr j;
+    done;
+  in !last_common
+
+(* Número de árvores binárias *)
+let num_trees = read_int()
+(* Lista (mutável) que contém os valores dos nodes de cada árvore: [[A;B;...]; [C;D;...]; [E;F;...]; ...] *)
+let trees = ref []
+(* Iterar sobre o número de árvores *)
+let () = for tree_index = 0 to num_trees-1 do
+    (* Lista (mutável) que armazena os valores dos nodos da respetiva árvore *)
+    let nodes_values = ref [] in
+    (* Número de nodos a inserir *)
+    let num_nodes = read_int() in
+    for node_index = 0 to num_nodes-1 do
+      (* Anexar leitura "stdin" à lista mutável "nodes_values" *)
+      nodes_values := !nodes_values@[read_int()]
+    done;
+    (* Anexar a lista de nodos (nodes_values) à lista de árvores (trees) *)
+    trees := !trees@[!nodes_values]
+  done;;
+
+(* Leitura dos dois últimos valores *)
+let (a, b) = Scanf.scanf "%d %d" (fun x y -> (x, y))
+
+let () = for i = 0 to num_trees-1 do
+    (* Obter lista dos valores dos nodos da respetiva árvores *)
+    let tree_nodes_list = List.nth(!trees)(i) in
+
+    (* Obter raíz da árvore e criar com ela um nodo *)
+    let tree_root = create_node Empty (List.nth(tree_nodes_list)(0)) Empty in
+
+    (* Lista (mutável) que armazena os nodos, começando com a raíz *)
+    let tree_nodes = ref [tree_root] in
+
+    (* Anexar nodo a nodo à lista "tree_nodes" *)
+    for i = 1 to List.length(tree_nodes_list)-1 do
+      tree_nodes := add(List.nth(tree_nodes_list)(i))(List.nth(!tree_nodes)(0))::!tree_nodes
+    done;
+
+    (* Obter apenas o primeiro nodo que irá conter todos os restantes no seu tipo *)
+    let tree = List.nth(!tree_nodes)(0) in
+
+    (* Variável que armazena o nodo mais próximo *)
+    let closest_node =
+      if find(a)(tree) && find(b)(tree) then
+        (* Obter o nodo mais próximo *)
+        let result = search_closest_node(tree)(a)(b) in result
+        (* Retorna (-1) caso não encontre os valores do input na árvore *)
+      else -1
+    in printf "%s\n" (if closest_node == -1 then "NO" else string_of_int(closest_node))
+  done
+
