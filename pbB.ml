@@ -66,23 +66,45 @@ let procuraMutacao arvore a b =
     in !ultimoComum 
 
 
+let v = ref 0
+let nrArvores =  read_int () 
+    let listaArvores = ref []
+    let introducaovalores =
+       (* Pede nr de arvores *)
+      if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido"
+      else
+      for i = 0 to nrArvores-1 do
+        let listaNodos = ref [] in
+          let qtdElementos = read_int () in
+          if qtdElementos <= 0 || qtdElementos > 10000 then failwith "Valores inválidos"
+          else
+          for j = 0 to qtdElementos-1 do
+              let valorNodos = read_int () in
+              if valorNodos < 0 then failwith "Valor Negativo"
+              else listaNodos:= !listaNodos@[valorNodos]
+          done;
+          listaArvores := !listaArvores@[!listaNodos]
+      done;;
+      let (a, b) = Scanf.scanf "%d %d" (fun a b -> (a,b))
 
-  let leitura ()=
-  let nrArvores = read_int () in
-  let listaArvores = ref [] in (* Pede nr de arvores *)
-  if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido" else
-   (*Mutavel pq pode armazenar valores*) 
-  for i = 0 to nrArvores-1 do                   
-    let nodos = ref [] in (*Nodos da arvores*)
-    let qtdNodos = read_int () in (*Quantidade de elementos que a arvore tem*)
-    let valorNodos = read_int () in (*Valor dos Nodos*)
-    if valorNodos <= 0 || valorNodos > 10000 then failwith "Valores inválidos"
-    else 
-    for j = 0 to qtdNodos - 1 do 
-      nodos := !nodos@[valorNodos]
-    done;
-     listaArvores := !listaArvores@[!nodos]
-  done;;
+let () =
+for l = 0 to nrArvores-1 do
+  let listaArvoresNodos = List.nth(!listaArvores)(l) in
+  let criarNodo = node Empty (List.nth(listaArvoresNodos)(0)) Empty in
+  let armazenaNodos = ref [criarNodo] in
+  for k = 1 to List.length (listaArvoresNodos)-1 do
+  armazenaNodos := add(List.nth(listaArvoresNodos)(k))(List.nth(!armazenaNodos)(0))::!armazenaNodos
+  done;
+  let arvoreFinal = List.nth(!armazenaNodos)(0) in
 
-  let (a, b) = Scanf.scanf "%d %d" (fun a b -> (a, b))
 
+
+  let nodoProximo ()= 
+  for i = 0 to nrArvores - 1 do
+    let teste = if procurar(a)(arvoreFinal) && procurar(b)(arvoreFinal) then
+       procuraMutacao (arvoreFinal) (a)(b) else -1
+    in
+    if teste = -1 then incr v ;
+    if nrArvores = !v then Prinf.printf "NO\n" else Printf.printf "%d\n" teste
+  done
+done
