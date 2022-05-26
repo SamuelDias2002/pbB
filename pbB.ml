@@ -41,8 +41,9 @@ let rec add valor = function
 let rec procurar valor arvore =
     match arvore with
     | Empty -> false
-    | Node (e, x, d, _) when x = valor -> true
-    | Node (e, _, d, _) -> procurar(valor)(e) || procurar(valor)(d);;
+    | Node (e, x, d, _) -> if valor < x then procurar(valor)(e) else if valor > x then
+      procurar(valor)(d) else true
+   
 
 let rec armazenacaminho arvore valor =
 let rec accArmazenar arvore =
@@ -53,58 +54,73 @@ let rec accArmazenar arvore =
 
 let caminho = accArmazenar arvore in caminho
 
-let procuraMutacao arvore a b =
+let procuraMutacao arvore a b  = 
+   
     let caminhoA = armazenacaminho arvore a in
     let caminhoB = armazenacaminho arvore b in
+    let acc1 = ref 0 in
+    let acc2 = ref 0 in
+    let w = acc1 in
+    let z = acc2 in
     let ultimoComum = ref 0 in  
-    let (w,z) = (ref 0, ref 0) in
-    let  () =
-      while !w < List.length(caminhoA) && !z < List.length(caminhoB) do
-        if List.nth(caminhoA)(!w) == List.nth(caminhoB)(!z) then
-          ultimoComum := List.nth(caminhoA)(!w); incr w; incr z;
-      done;
-    in !ultimoComum 
+      while (!w < List.length caminhoA) && (!w < List.length caminhoB) do
+        let rec elemento p lista = 
+        match p, lista with
+        |_,[] -> failwith "Valor Inválido"
+        |0, c::t -> c
+        |p, c::t -> elemento (p-1) t
+        
+      in
+      if elemento !w caminhoA = elemento !z caminhoB   then
+        if (elemento !w caminhoA = a) || (elemento !z caminhoB = b) then
+          let  () = 
+          ultimoComum := elemento !w caminhoA;
+          w := List.length caminhoA
+        in ()
+      else 
+        let  () = 
+          ultimoComum := elemento !w caminhoA ; incr w ; incr z in ()
+        else
+          w := List.length caminhoA
+        done;
+!ultimoComum 
+
+let closestNode arr x a b arv =
+  if procurar (a) (arv) && procurar (b) (arv) then arr.(x) <- procuraMutacao arv a b else arr.(x) <- (-1)
 
 
-let v = ref 0
-let nrArvores =  read_int () 
-    let listaArvores = ref []
-    let introducaovalores =
-       (* Pede nr de arvores *)
-      if nrArvores  <= 0 || nrArvores > 5000 then failwith "Número de árvores Inválido"
-      else
-      for i = 0 to nrArvores-1 do
-        let listaNodos = ref [] in
-          let qtdElementos = read_int () in
-          if qtdElementos <= 0 || qtdElementos > 10000 then failwith "Valores inválidos"
-          else
-          for j = 0 to qtdElementos-1 do
-              let valorNodos = read_int () in
-              if valorNodos < 0 then failwith "Valor Negativo"
-              else listaNodos:= !listaNodos@[valorNodos]
-          done;
-          listaArvores := !listaArvores@[!listaNodos]
-      done;;
-      let (a, b) = Scanf.scanf "%d %d" (fun a b -> (a,b))
+let v = ref 0 (*Variavél útil*)
+let nrArvores = read_int ()
+let () = if nrArvores <= 0 || nrArvores > 5000 then failwith "VALOR INVÁLIDO"
+
+let hashtable = Hashtbl.create nrArvores (*Criar a floresta*)
+
+let ()= 
+for i = 0 to nrArvores - 1 do
+  let nrElementos = read_int () in
+  if nrElementos <= 0 || nrElementos > 10_000 then failwith "Número de elementos inválido"
+  else 
+    for j = 0 to nrElementos - 1 do
+      let valor = read_int () in 
+      let arvoreHTB = 
+        if Hashtbl.mem hashtable i then Hashtbl.find hashtable i
+        else
+          Empty in Hashtbl.replace hashtable i (add valor arvoreHTB)
+        done
+      done
+
+let (a,b) = Scanf.scanf "%d %d" (fun a b -> (a,b))
+
 
 let () =
-for l = 0 to nrArvores-1 do
-  let listaArvoresNodos = List.nth(!listaArvores)(l) in
-  let criarNodo = node Empty (List.nth(listaArvoresNodos)(0)) Empty in
-  let armazenaNodos = ref [criarNodo] in
-  for k = 1 to List.length (listaArvoresNodos)-1 do
-  armazenaNodos := add(List.nth(listaArvoresNodos)(k))(List.nth(!armazenaNodos)(0))::!armazenaNodos
+let arrayOutput = Array.make nrArvores 0 in
+for k = 0 to nrArvores -1  do 
+  let teste = Hashtbl.find hashtable k in closestNode arrayOutput k a b teste;
+  for l = 0 to nrArvores - 1 do 
+    if arrayOutput.(l) = -1 then incr v
+    done
   done;
-  let arvoreFinal = List.nth(!armazenaNodos)(0) in
-
-
-
-  let nodoProximo ()= 
-  for i = 0 to nrArvores - 1 do
-    let teste = if procurar(a)(arvoreFinal) && procurar(b)(arvoreFinal) then
-       procuraMutacao (arvoreFinal) (a)(b) else -1
-    in
-    if teste = -1 then incr v ;
-    if nrArvores = !v then Prinf.printf "NO\n" else Printf.printf "%d\n" teste
-  done
+  if !v = nrArvores then Printf.printf "NO\n" else
+for s = 0 to nrArvores - 1 do 
+      if arrayOutput.(s) = -1 then Printf.printf "" else Printf.printf "%d\n" arrayOutput.(s)
 done
