@@ -115,7 +115,19 @@ let (a,b) = Scanf.scanf "%d %d" (fun a b -> (a,b))
 let () =
 let arrayOutput = Array.make nrArvores 0 in
 for k = 0 to nrArvores -1  do 
-  let teste = Hashtbl.find hashtable k in closestNode arrayOutput k a b teste;
+  let teste = Hashtbl.find hashtable k in 
+  (*
+  Lista pq funcao procuramutaçao agora é uma lista
+     
+  
+  let nodomaisproximo = if a < raiz && b > raiz || a > raiz && b < raiz then raiz
+      else if a = b then a
+      else
+        procuraproximo acaminho bcaminho in
+  
+  
+  
+  *)
   for l = 0 to nrArvores - 1 do 
     if arrayOutput.(l) = -1 then incr v
     done
